@@ -52,7 +52,7 @@ jobs:
           prop_path: 'product'
       - name: Build product
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only
+        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only -j2
       - uses: actions/upload-artifact@v2
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
         with:

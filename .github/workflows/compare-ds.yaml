@@ -53,7 +53,7 @@ jobs:
           prop_path: 'product'
       - name: Build product ${{ github.base_ref }} (${{ steps.fork_point.outputs.FORK_POINT }})
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only
+        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only -j2
       - name: Copy built datastream stream to be compared
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
         run: cp build/ssg-${{steps.product.outputs.prop}}-ds.xml ssg-${{steps.product.outputs.prop}}-ds.xml
@@ -65,7 +65,7 @@ jobs:
           clean: false
       - name: Build product
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only
+        run: ./build_product ${{steps.product.outputs.prop}} --datastream-only -j2
       - name: Compare datastreams
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
         run: utils/compare_ds.py ssg-${{steps.product.outputs.prop}}-ds.xml build/ssg-${{steps.product.outputs.prop}}-ds.xml | tee diff.log
