@@ -54,7 +54,7 @@ jobs:
           prop_path: 'product'
       - name: Build product
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: ./build_product rhel8 --derivatives
+        run: ./build_product rhel8 --derivatives -j2
       - uses: actions/upload-artifact@v2
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
         with:
