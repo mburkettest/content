@@ -18,6 +18,7 @@ description: |-
 rationale: |-
     Removing the DHCP server ensures that it cannot be easily or
     accidentally reactivated and disrupt network operation.
+    blah
 
 severity: medium
 
