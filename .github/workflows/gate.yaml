@@ -12,7 +12,7 @@ concurrency:
 jobs:
   validate-sle:
     name: Build, Test on SLE 15 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: registry.suse.com/bci/bci-base:latest
     steps:
@@ -37,12 +37,12 @@ jobs:
       - name: Build
         run: ./build_product sle12 sle15
       - name: Test
-        run: ctest -j2 --output-on-failure -E unique-stigids
+        run: ctest -j$(nproc) --output-on-failure -E unique-stigids
         working-directory: ./build
 
   validate-suse:
     name: Build, Test on OpenSUSE Leap 15 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: opensuse/leap:15
     steps:
@@ -55,12 +55,12 @@ jobs:
         env:
           ADDITIONAL_CMAKE_OPTIONS: "-DSSG_OVAL_SCHEMATRON_VALIDATION_ENABLED=OFF"
       - name: Test
-        run: ctest -j2 --output-on-failure -E unique-stigids
+        run: ctest -j$(nproc) --output-on-failure -E unique-stigids
         working-directory: ./build
 
   validate-debian:
     name: Build, Test on Debian 12 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: debian:bookworm
     steps:
@@ -81,11 +81,11 @@ jobs:
           ./build_product debian11 debian12
       - name: Test
         working-directory: ./build
-        run: ctest -j2 --output-on-failure -E unique-stigids
+        run: ctest -j$(nproc) --output-on-failure -E unique-stigids
 
   validate-ubuntu-22-04:
     name: Build, Test on Ubuntu 22.04
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Install Deps
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libopenscap8 libxml2-utils xsltproc ansible-lint bats python3-github python3-jinja2 python3-pip python3-pytest python3-pytest-cov python3-setuptools python3-yaml shellcheck
@@ -99,12 +99,12 @@ jobs:
         run: |-
           ./build_product ubuntu1604 ubuntu1804 ubuntu2004 ubuntu2204
       - name: Test
-        run: ctest -j2 --output-on-failure -E unique-stigids
+        run: ctest -j$(nproc) --output-on-failure -E unique-stigids
         working-directory: ./build
 
   validate-ubuntu-24-04:
     name: Build, Test on Ubuntu 24.04
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Install Deps
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build openscap-utils libxml2-utils xsltproc ansible-lint bats python3-github python3-jinja2 python3-pip python3-pytest python3-pytest-cov python3-setuptools python3-yaml shellcheck
@@ -118,12 +118,12 @@ jobs:
         run: |-
           ./build_product ubuntu2404
       - name: Test
-        run: ctest -j2 --output-on-failure -E unique-stigids
+        run: ctest -j$(nproc) --output-on-failure -E unique-stigids
         working-directory: ./build
 
   validate-fedora-rawhide:
     name: Build, Test on Fedora Rawhide (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: registry.fedoraproject.org/fedora:rawhide
     steps:
@@ -154,5 +154,5 @@ jobs:
           env:
             ADDITIONAL_CMAKE_OPTIONS: "-DSSG_OVAL_SCHEMATRON_VALIDATION_ENABLED=OFF"
       -   name: Test
-          run: ctest -j2 --output-on-failure -E unique-stigids
+          run: ctest -j$(nproc) --output-on-failure -E unique-stigids
           working-directory: ./build
