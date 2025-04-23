@@ -9,7 +9,7 @@ on:
 jobs:
     update-oscal:
         name: Update content
-        runs-on: ubuntu-latest
+        runs-on: blacksmith-4vcpu-ubuntu-2204
         permissions:
             contents: write
             pull-requests: write
@@ -28,7 +28,7 @@ jobs:
             - name: Checkout
               uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
             - name: Install Python
-              uses: actions/setup-python@8d9ed9ac5c53483de85588cdf95a591a75ab9f55 # v5
+              uses: useblacksmith/setup-python@v6 # v5
               with:
                   python-version: '3.9'
             - name: Install python deps

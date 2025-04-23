@@ -12,7 +12,7 @@ concurrency:
 jobs:
   validate-sle:
     name: Build, Test on SLE 15 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: registry.suse.com/bci/bci-base:latest
     steps:
@@ -42,7 +42,7 @@ jobs:
 
   validate-suse:
     name: Build, Test on OpenSUSE Leap 15 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: opensuse/leap:15
     steps:
@@ -60,7 +60,7 @@ jobs:
 
   validate-debian:
     name: Build, Test on Debian 12 (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: debian:bookworm
     steps:
@@ -85,7 +85,7 @@ jobs:
 
   validate-ubuntu-22-04:
     name: Build, Test on Ubuntu 22.04
-    runs-on: ubuntu-22.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Install Deps
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build libopenscap8 libxml2-utils xsltproc ansible-lint bats python3-github python3-jinja2 python3-pip python3-pytest python3-pytest-cov python3-setuptools python3-yaml shellcheck
@@ -104,7 +104,7 @@ jobs:
 
   validate-ubuntu-24-04:
     name: Build, Test on Ubuntu 24.04
-    runs-on: ubuntu-24.04
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Install Deps
         run: sudo apt-get update && sudo apt-get install -y cmake ninja-build openscap-utils libxml2-utils xsltproc ansible-lint bats python3-github python3-jinja2 python3-pip python3-pytest python3-pytest-cov python3-setuptools python3-yaml shellcheck
@@ -123,7 +123,7 @@ jobs:
 
   validate-fedora-rawhide:
     name: Build, Test on Fedora Rawhide (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: registry.fedoraproject.org/fedora:rawhide
     steps:

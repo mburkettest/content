@@ -12,7 +12,7 @@ env:
 jobs:
   stabilize-fedora:
     name: Build and Stabilization Tests on Fedora Latest (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: fedora:latest
     steps:

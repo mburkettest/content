@@ -5,7 +5,7 @@ on:
 jobs:
   content-test-filtering:
     name: Content Test Filtering on Ubuntu Latest
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     steps:
       - name: Install Deps
         run: sudo apt-get update && sudo apt-get install git python3-jinja2 python3-yaml python3-setuptools python3-deepdiff python3-git python3-github python3-requests xmldiff python3-setuptools

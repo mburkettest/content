@@ -9,7 +9,7 @@ on:
 jobs:
   get-pr-number:
     name: Get PR number
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       pr-number: ${{ steps.pr_number.outputs.pr_number }}
     steps:
@@ -47,7 +47,7 @@ jobs:
       contents: read
       id-token: write
       packages: write
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     outputs:
       image-digest: ${{ steps.container_info.outputs.image-digest }}
       image-tags: ${{ steps.container_info.outputs.image-tags }}
@@ -103,7 +103,7 @@ jobs:
     needs: 
       - container-main
       - get-pr-number
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     name: Upsert comment on the PR
     steps:
       - uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v2
