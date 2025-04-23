@@ -5,7 +5,7 @@ on:
 jobs:
   validate-fedora-ar:
     name: Build, Lint Ansible Roles on Fedora Latest (Container)
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2204
     container:
       image: fedora:latest
     steps:
