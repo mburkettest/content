@@ -10,6 +10,7 @@ import ssg.utils
 import ssg.controls
 import ssg.products
 import ssg.environment
+import ssg.templates
 from ssg.build_cpe import ProductCPEs
 from ssg.constants import BENCHMARKS
 from ssg.entities.profile import ProfileWithInlinePolicies
@@ -52,6 +53,11 @@ def create_parser():
         "The profile ID is identical to the rule ID of the selected rule."
         " If you want to process all rules in benchmark of the product, "
         "you can use 'ALL_RULES'.",
+    )
+    parser.add_argument(
+        "--templates-dir", required=True,
+        help="Path to directory which contains content templates. "
+        "e.g.: ~/scap-security-guide/shared/templates"
     )
     return parser
 
@@ -184,6 +190,18 @@ def get_profiles_per_rule_by_id(rule_id, project_root_abspath, env_yaml, product
     return get_minimal_profiles_by_id(rules)
 
 
+def build_templated_content(env_yaml, resolved_base, templates_dir):
+    resolved_rules_dir = os.path.join(resolved_base, "rules")
+    remediations_dir = os.path.join(resolved_base, "fixes_from_templates")
+    checks_dir = os.path.join(resolved_base, "checks_from_templates")
+    platforms_dir = os.path.join(resolved_base, "platforms")
+    cpe_items_dir = os.path.join(resolved_base, "cpe_items")
+    builder = ssg.templates.Builder(
+        env_yaml, resolved_rules_dir, templates_dir,
+        remediations_dir, checks_dir, platforms_dir, cpe_items_dir)
+    builder.build()
+
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
@@ -239,6 +257,7 @@ def main():
     profiles = list(normal_profiles.values()) + list(single_rule_profiles.values())
     save_everything(
         args.resolved_base, loader, controls_manager, profiles)
+    build_templated_content(env_yaml, args.resolved_base, args.templates_dir)
 
 
 if __name__ == "__main__":

@@ -120,7 +120,7 @@ macro(ssg_build_compiled_artifacts PRODUCT)
         add_custom_command(
             OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/profiles"
-            COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/compile_all.py" --resolved-base "${CMAKE_CURRENT_BINARY_DIR}" --project-root "${CMAKE_SOURCE_DIR}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --sce-metadata "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json" --rule-id "${SSG_THIN_DS_RULE_ID}"
+            COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/compile_all.py" --resolved-base "${CMAKE_CURRENT_BINARY_DIR}" --project-root "${CMAKE_SOURCE_DIR}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --sce-metadata "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json" --rule-id "${SSG_THIN_DS_RULE_ID}" --templates-dir "${SSG_SHARED}/templates"
             COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
             DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/product.yml"
             DEPENDS generate-internal-${PRODUCT}-sce-metadata.json "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json"
@@ -130,7 +130,7 @@ macro(ssg_build_compiled_artifacts PRODUCT)
         add_custom_command(
             OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/profiles"
-            COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/compile_all.py" --resolved-base "${CMAKE_CURRENT_BINARY_DIR}" --project-root "${CMAKE_SOURCE_DIR}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --sce-metadata "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json" --stig-references "${STIG_REFERENCE_FILE}" --rule-id "${SSG_THIN_DS_RULE_ID}"
+            COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/compile_all.py" --resolved-base "${CMAKE_CURRENT_BINARY_DIR}" --project-root "${CMAKE_SOURCE_DIR}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --sce-metadata "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json" --stig-references "${STIG_REFERENCE_FILE}" --rule-id "${SSG_THIN_DS_RULE_ID}" --templates-dir "${SSG_SHARED}/templates"
             COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
             DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/product.yml"
             DEPENDS generate-internal-${PRODUCT}-sce-metadata.json "${CMAKE_CURRENT_BINARY_DIR}/checks/sce/metadata.json"
@@ -164,25 +164,6 @@ macro(ssg_build_xccdf_oval_ocil PRODUCT)
     )
 endmacro()
 
-# Build all templated content using the YAML "template" key in this product's
-# rules. This includes OVAL, Bash, Ansible, and the like.
-macro(ssg_build_templated_content PRODUCT)
-    set(BUILD_CHECKS_DIR "${CMAKE_CURRENT_BINARY_DIR}/checks_from_templates")
-    set(BUILD_REMEDIATIONS_DIR "${CMAKE_CURRENT_BINARY_DIR}/fixes_from_templates")
-    add_custom_command(
-        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
-        COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/build_templated_content.py" --resolved-rules-dir "${CMAKE_CURRENT_BINARY_DIR}/rules" --templates-dir "${SSG_SHARED}/templates" --platforms-dir "${CMAKE_CURRENT_BINARY_DIR}/platforms" --cpe-items-dir "${CMAKE_CURRENT_BINARY_DIR}/cpe_items" --checks-dir "${BUILD_CHECKS_DIR}" --remediations-dir "${BUILD_REMEDIATIONS_DIR}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml"
-        COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
-        # Actually we mean that it depends on resolved rules.
-        DEPENDS ${PRODUCT}-compile-all "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
-        COMMENT "[${PRODUCT}-content] generating templated content"
-    )
-    add_custom_target(
-        generate-internal-templated-content-${PRODUCT}
-        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
-    )
-endmacro()
-
 macro(ssg_collect_remediations PRODUCT LANGUAGES)
     set(REMEDIATION_TYPE_OPTIONS "")
     foreach(LANGUAGE ${LANGUAGES})
@@ -190,11 +171,10 @@ macro(ssg_collect_remediations PRODUCT LANGUAGES)
     endforeach()
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/collect-remediations-${PRODUCT}"
-        COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/collect_remediations.py" --resolved-rules-dir "${CMAKE_CURRENT_BINARY_DIR}/rules" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" ${REMEDIATION_TYPE_OPTIONS} --output-dir "${CMAKE_CURRENT_BINARY_DIR}/fixes" --fixes-from-templates-dir "${BUILD_REMEDIATIONS_DIR}" --platforms-dir "${CMAKE_CURRENT_BINARY_DIR}/platforms" --cpe-items-dir "${CMAKE_CURRENT_BINARY_DIR}/cpe_items"
+        COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/collect_remediations.py" --resolved-rules-dir "${CMAKE_CURRENT_BINARY_DIR}/rules" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" ${REMEDIATION_TYPE_OPTIONS} --output-dir "${CMAKE_CURRENT_BINARY_DIR}/fixes" --fixes-from-templates-dir "${CMAKE_CURRENT_BINARY_DIR}/fixes_from_templates" --platforms-dir "${CMAKE_CURRENT_BINARY_DIR}/platforms" --cpe-items-dir "${CMAKE_CURRENT_BINARY_DIR}/cpe_items"
         COMMAND ${CMAKE_COMMAND} -E touch "${CMAKE_CURRENT_BINARY_DIR}/collect-remediations-${PRODUCT}"
         # Acutally we mean that it depends on resolved rules.
         DEPENDS ${PRODUCT}-compile-all "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
-        DEPENDS generate-internal-templated-content-${PRODUCT} "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
         COMMENT "[${PRODUCT}-content] collecting all fixes"
     )
     add_custom_target(
@@ -310,7 +290,7 @@ macro(ssg_build_oval_unlinked PRODUCT)
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/oval-unlinked.xml"
         COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/combine_ovals.py" --log "${LOG_LEVEL}" --include-benchmark --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --output "${CMAKE_CURRENT_BINARY_DIR}/oval-unlinked.xml" ${OVAL_COMBINE_PATHS}
-        DEPENDS generate-internal-templated-content-${PRODUCT} "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
+        DEPENDS ${PRODUCT}-compile-all "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
         COMMENT "[${PRODUCT}-content] generating oval-unlinked.xml"
     )
     add_custom_target(
@@ -323,7 +303,7 @@ macro(ssg_build_cpe_oval_unlinked PRODUCT)
     add_custom_command(
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cpe-oval-unlinked.xml"
         COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${SSG_BUILD_SCRIPTS}/combine_ovals.py" --log "${LOG_LEVEL}" --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml" --output "${CMAKE_CURRENT_BINARY_DIR}/cpe-oval-unlinked.xml" --build-ovals-dir "${CMAKE_CURRENT_BINARY_DIR}/checks/oval" "${CMAKE_CURRENT_BINARY_DIR}/checks_from_templates/cpe-oval" "${SSG_SHARED}/checks/oval" "${SSG_SHARED}/applicability/oval"
-        DEPENDS generate-internal-templated-content-${PRODUCT} "${CMAKE_CURRENT_BINARY_DIR}/templated-content-${PRODUCT}"
+        DEPENDS ${PRODUCT}-compile-all "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
         COMMENT "[${PRODUCT}-content] generating cpe-oval-unlinked.xml"
     )
     add_custom_target(
@@ -645,7 +625,7 @@ macro(ssg_make_all_tables PRODUCT)
         OUTPUT "${CMAKE_BINARY_DIR}/tables/tables-${PRODUCT}-all.html"
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${CMAKE_BINARY_DIR}/tables"
         COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${Python_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/utils/gen_tables.py" --build-dir "${CMAKE_BINARY_DIR}" --output-type html --output "${CMAKE_BINARY_DIR}/tables/tables-${PRODUCT}-all.html" "${PRODUCT}"
-        # Actually we mean that it depends on resolved rules - see also ssg_build_templated_content
+        # Actually we mean that it depends on resolved rules
         DEPENDS ${PRODUCT}-compile-all "${CMAKE_CURRENT_BINARY_DIR}/ssg_build_compile_all-${PRODUCT}"
     )
     add_custom_target(generate-ssg-tables-${PRODUCT}-all
@@ -674,8 +654,8 @@ endmacro()
 macro(ssg_build_tests PRODUCT)
     add_custom_command(
         OUTPUT "${CMAKE_BINARY_DIR}/${PRODUCT}/tests/.tests_done"
-        COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/build-scripts/build_tests.py"  --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --resolved-rules-dir "${CMAKE_CURRENT_BINARY_DIR}/rules" --output  "${CMAKE_CURRENT_BINARY_DIR}/tests" --product-yaml "${CMAKE_CURRENT_BINARY_DIR}/product.yml"
-        # Actually we mean that it depends on resolved rules - see also ssg_build_templated_content
+        COMMAND env "PYTHONPATH=$ENV{PYTHONPATH}" "${PYTHON_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/build-scripts/build_tests.py"  --build-config-yaml "${CMAKE_BINARY_DIR}/build_config.yml" --resolved-rules-dir "${CMAKE_CURRENT_BINARY_DIR}/rules" --output  "${CMAKE_CURRENT_BINARY_DIR}/tests" --product-yaml "${CMAKE_SOURCE_DIR}/products/${PRODUCT}/product.yml"
+        # Actually we mean that it depends on resolved rules
         DEPENDS ${PRODUCT}-content
         COMMENT "[${PRODUCT}-tests] generating tests"
     )
@@ -721,7 +701,6 @@ macro(ssg_build_product PRODUCT)
     ssg_build_sce(${PRODUCT})
     ssg_build_xccdf_oval_ocil(${PRODUCT})
     ssg_make_all_tables(${PRODUCT})
-    ssg_build_templated_content(${PRODUCT})
     ssg_build_remediations(${PRODUCT})
 
     if("${PRODUCT_ANSIBLE_REMEDIATION_ENABLED}" AND SSG_ANSIBLE_PLAYBOOKS_PER_RULE_ENABLED)

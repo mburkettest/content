@@ -96,13 +96,11 @@ refer to their help text for more information and usage:
 - `build_rule_playbooks.py` -- generates per-rule per-profile playbooks in
   Ansible content.
 - `build_sce.py` -- outputs SCE content and combined metadata.
-- `build_templated_content.py` -- generates templated audit and remediation
-  content.
 - `build_xccdf.py` -- generate XCCDF, OVAL and OCIL documents from resolved content
 - `collect_remediations.py` -- finds the separate (per-rule and templated)
   remediations and places them into a single directory.
 - `combine_ovals.py` -- combines separate (per-rule, shared, and templated) OVAL XML trees into a single larger OVAL XML document.
-- `compile_all.py` -- resolves rules, groups, profiles static checks and remediations to the product-specific resolved form (also known as compiled form)
+- `compile_all.py` -- resolves rules, groups, profiles static checks and remediations to the product-specific resolved form (also known as compiled form), and generates templated content
 - `compile_product.py` -- resolves the product.yml and distributed product attributes
 - `compose_ds.py` -- composes an SCAP source data stream from individual
   SCAP components
