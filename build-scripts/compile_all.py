@@ -4,6 +4,7 @@ import argparse
 import os.path
 
 import ssg.build_profile
+import ssg.build_remediations as remediation
 import ssg.build_yaml
 import ssg.jinja
 import ssg.utils
@@ -59,6 +60,10 @@ def create_parser():
         help="Path to directory which contains content templates. "
         "e.g.: ~/scap-security-guide/shared/templates"
     )
+    parser.add_argument(
+        "--remediation-type", required=True, action="append",
+        help="language or type of the remediations we are combining."
+        "example: ansible")
     return parser
 
 
@@ -204,6 +209,106 @@ def build_templated_content(env_yaml, resolved_base, templates_dir, rules, platf
     builder.build()
 
 
+def prepare_output_dirs(output_dir, remediation_types):
+    output_dirs = dict()
+    for lang in remediation_types:
+        language_output_dir = os.path.join(output_dir, lang)
+        ssg.utils.mkdir_p(language_output_dir)
+        output_dirs[lang] = language_output_dir
+    return output_dirs
+
+
+def find_remediation(
+        fixes_from_templates_dir, rule_dir, lang, product, expected_file_name):
+    language_fixes_from_templates_dir = os.path.join(
+        fixes_from_templates_dir, lang)
+    fix_path = None
+    # first look for a static remediation
+    rule_dir_remediations = remediation.get_rule_dir_remediations(
+        rule_dir, lang, product)
+    if len(rule_dir_remediations) > 0:
+        # first item in the list has the highest priority
+        fix_path = rule_dir_remediations[0]
+    if fix_path is None:
+        # check if we have a templated remediation instead
+        if os.path.isdir(language_fixes_from_templates_dir):
+            templated_fix_path = os.path.join(
+                language_fixes_from_templates_dir, expected_file_name)
+            if os.path.exists(templated_fix_path):
+                fix_path = templated_fix_path
+    return fix_path
+
+
+def process_remediation(
+        rule, fix_path, lang, output_dirs, expected_file_name, env_yaml, cpe_platforms):
+    remediation_cls = remediation.REMEDIATION_TO_CLASS[lang]
+    remediation_obj = remediation_cls(fix_path)
+    remediation_obj.associate_rule(rule)
+    fix = remediation.process(remediation_obj, env_yaml, cpe_platforms)
+    if fix:
+        output_file_path = os.path.join(output_dirs[lang], expected_file_name)
+        remediation.write_fix_to_file(fix, output_file_path)
+
+
+def collect_remediations(
+        rule, langs, fixes_from_templates_dir, product, output_dirs,
+        env_yaml, cpe_platforms):
+    rule_dir = os.path.dirname(rule.definition_location)
+    for lang in langs:
+        ext = remediation.REMEDIATION_TO_EXT_MAP[lang]
+        expected_file_name = rule.id_ + ext
+        fix_path = find_remediation(
+            fixes_from_templates_dir, rule_dir, lang, product,
+            expected_file_name)
+        if fix_path is None:
+            # neither static nor templated remediation found
+            continue
+        try:
+            process_remediation(
+                rule, fix_path, lang, output_dirs, expected_file_name, env_yaml, cpe_platforms)
+        except Exception as exc:
+            msg = (
+                "Failed to dispatch {lang} remediation for {rule_id}: {error}"
+                .format(lang=lang, rule_id=rule.id_, error=str(exc)))
+            raise RuntimeError(msg)
+
+
+def collect_remediations_main(env_yaml, remediation_type, resolved_base):
+    output_dir = os.path.join(resolved_base, "fixes")
+    cpe_items_dir = os.path.join(resolved_base, "cpe_items")
+    platforms_dir = os.path.join(resolved_base, "platforms")
+    fixes_from_templates_dir = os.path.join(resolved_base, "fixes_from_templates")
+    resolved_rules_dir = os.path.join(resolved_base, "rules")
+
+    product = ssg.utils.required_key(env_yaml, "product")
+    output_dirs = prepare_output_dirs(output_dir, remediation_type)
+    product_cpes = ProductCPEs()
+    product_cpes.load_cpes_from_directory_tree(cpe_items_dir, env_yaml)
+    cpe_platforms = dict()
+    for platform_file in os.listdir(platforms_dir):
+        platform_path = os.path.join(platforms_dir, platform_file)
+        try:
+            platform = ssg.build_yaml.Platform.from_compiled_json(
+                platform_path, env_yaml, product_cpes)
+        except ssg.build_yaml.DocumentationNotComplete:
+            # Happens on non-debug build when a platform is
+            # "documentation-incomplete"
+            continue
+        cpe_platforms[platform.name] = platform
+
+    for rule_file in os.listdir(resolved_rules_dir):
+        rule_path = os.path.join(resolved_rules_dir, rule_file)
+        try:
+            rule = ssg.build_yaml.Rule.from_compiled_json(rule_path, env_yaml)
+        except ssg.build_yaml.DocumentationNotComplete:
+            # Happens on non-debug build when a rule is
+            # "documentation-incomplete"
+            continue
+        collect_remediations(
+            rule, remediation_type, fixes_from_templates_dir,
+            product, output_dirs, env_yaml, cpe_platforms)
+
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
@@ -262,6 +367,8 @@ def main():
     build_templated_content(
         env_yaml, args.resolved_base, args.templates_dir,
         loader.all_rules.values(), product_cpes.platforms.values())
+    collect_remediations_main(
+        env_yaml, args.remediation_type, args.resolved_base)
 
 
 if __name__ == "__main__":
