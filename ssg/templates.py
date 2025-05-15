@@ -578,7 +578,7 @@ class Builder(object):
                 if rule.is_templated():
                     self.build_rule(rule)
         else:
-            for rule in self.rules.values():
+            for rule in self.rules:
                 if rule.is_templated():
                     self.build_rule(rule)
 

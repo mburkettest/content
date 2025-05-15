@@ -259,7 +259,9 @@ def main():
     profiles = list(normal_profiles.values()) + list(single_rule_profiles.values())
     save_everything(
         args.resolved_base, loader, controls_manager, profiles)
-    build_templated_content(env_yaml, args.resolved_base, args.templates_dir, loader.all_rules, product_cpes.platforms.values())
+    build_templated_content(
+        env_yaml, args.resolved_base, args.templates_dir,
+        loader.all_rules.values(), product_cpes.platforms.values())
 
 
 if __name__ == "__main__":
