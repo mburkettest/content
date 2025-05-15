@@ -260,6 +260,7 @@ class Builder(object):
         self.output_dirs = dict()
         self.templates = dict()
         self.rules = None
+        self.platforms = None
         self._init_lang_output_dirs()
         self._init_and_load_templates()
         self.product_cpes = ProductCPEs()
@@ -539,11 +540,15 @@ class Builder(object):
             OSError: If there is an issue reading the platforms directory or files.
             ssg.build_yaml.PlatformError: If there is an issue constructing the Platform object.
         """
-        for platform_file in sorted(os.listdir(self.platforms_dir)):
-            platform_path = os.path.join(self.platforms_dir, platform_file)
-            platform = ssg.build_yaml.Platform.from_compiled_json(
-                platform_path, self.env_yaml, self.product_cpes)
-            self.build_platform(platform)
+        if self.platforms is None:
+            for platform_file in sorted(os.listdir(self.platforms_dir)):
+                platform_path = os.path.join(self.platforms_dir, platform_file)
+                platform = ssg.build_yaml.Platform.from_compiled_json(
+                    platform_path, self.env_yaml, self.product_cpes)
+                self.build_platform(platform)
+        else:
+            for platform in self.platforms:
+                self.build_platform(platform)
 
     def build_all_rules(self):
         """
