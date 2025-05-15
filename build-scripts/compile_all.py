@@ -190,7 +190,7 @@ def get_profiles_per_rule_by_id(rule_id, project_root_abspath, env_yaml, product
     return get_minimal_profiles_by_id(rules)
 
 
-def build_templated_content(env_yaml, resolved_base, templates_dir):
+def build_templated_content(env_yaml, resolved_base, templates_dir, rules):
     resolved_rules_dir = os.path.join(resolved_base, "rules")
     remediations_dir = os.path.join(resolved_base, "fixes_from_templates")
     checks_dir = os.path.join(resolved_base, "checks_from_templates")
@@ -199,6 +199,7 @@ def build_templated_content(env_yaml, resolved_base, templates_dir):
     builder = ssg.templates.Builder(
         env_yaml, resolved_rules_dir, templates_dir,
         remediations_dir, checks_dir, platforms_dir, cpe_items_dir)
+    builder.rules = rules
     builder.build()
 
 
@@ -257,7 +258,7 @@ def main():
     profiles = list(normal_profiles.values()) + list(single_rule_profiles.values())
     save_everything(
         args.resolved_base, loader, controls_manager, profiles)
-    build_templated_content(env_yaml, args.resolved_base, args.templates_dir)
+    build_templated_content(env_yaml, args.resolved_base, args.templates_dir, loader.all_rules)
 
 
 if __name__ == "__main__":
