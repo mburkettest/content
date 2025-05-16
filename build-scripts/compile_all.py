@@ -273,37 +273,12 @@ def process_remediations_for_rule(
             raise RuntimeError(msg)
 
 
-def process_remediations(env_yaml, remediation_type, resolved_base):
+def process_remediations(env_yaml, remediation_type, resolved_base, rules, cpe_platforms):
     output_dir = os.path.join(resolved_base, "fixes")
-    cpe_items_dir = os.path.join(resolved_base, "cpe_items")
-    platforms_dir = os.path.join(resolved_base, "platforms")
     fixes_from_templates_dir = os.path.join(resolved_base, "fixes_from_templates")
-    resolved_rules_dir = os.path.join(resolved_base, "rules")
-
     product = ssg.utils.required_key(env_yaml, "product")
     output_dirs = prepare_output_dirs(output_dir, remediation_type)
-    product_cpes = ProductCPEs()
-    product_cpes.load_cpes_from_directory_tree(cpe_items_dir, env_yaml)
-    cpe_platforms = dict()
-    for platform_file in os.listdir(platforms_dir):
-        platform_path = os.path.join(platforms_dir, platform_file)
-        try:
-            platform = ssg.build_yaml.Platform.from_compiled_json(
-                platform_path, env_yaml, product_cpes)
-        except ssg.build_yaml.DocumentationNotComplete:
-            # Happens on non-debug build when a platform is
-            # "documentation-incomplete"
-            continue
-        cpe_platforms[platform.name] = platform
-
-    for rule_file in os.listdir(resolved_rules_dir):
-        rule_path = os.path.join(resolved_rules_dir, rule_file)
-        try:
-            rule = ssg.build_yaml.Rule.from_compiled_json(rule_path, env_yaml)
-        except ssg.build_yaml.DocumentationNotComplete:
-            # Happens on non-debug build when a rule is
-            # "documentation-incomplete"
-            continue
+    for rule in rules:
         process_remediations_for_rule(
             rule, remediation_type, fixes_from_templates_dir,
             product, output_dirs, env_yaml, cpe_platforms)
@@ -368,7 +343,8 @@ def main():
         env_yaml, args.resolved_base, args.templates_dir,
         loader.all_rules.values(), product_cpes.platforms.values())
     process_remediations(
-        env_yaml, args.remediation_type, args.resolved_base)
+        env_yaml, args.remediation_type, args.resolved_base,
+        loader.all_rules.values(), product_cpes.platforms)
 
 
 if __name__ == "__main__":
