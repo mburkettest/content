@@ -250,7 +250,7 @@ def process_remediation(
         remediation.write_fix_to_file(fix, output_file_path)
 
 
-def collect_remediations(
+def process_remediations_for_rule(
         rule, langs, fixes_from_templates_dir, product, output_dirs,
         env_yaml, cpe_platforms):
     rule_dir = os.path.dirname(rule.definition_location)
@@ -273,7 +273,7 @@ def collect_remediations(
             raise RuntimeError(msg)
 
 
-def collect_remediations_main(env_yaml, remediation_type, resolved_base):
+def process_remediations(env_yaml, remediation_type, resolved_base):
     output_dir = os.path.join(resolved_base, "fixes")
     cpe_items_dir = os.path.join(resolved_base, "cpe_items")
     platforms_dir = os.path.join(resolved_base, "platforms")
@@ -304,7 +304,7 @@ def collect_remediations_main(env_yaml, remediation_type, resolved_base):
             # Happens on non-debug build when a rule is
             # "documentation-incomplete"
             continue
-        collect_remediations(
+        process_remediations_for_rule(
             rule, remediation_type, fixes_from_templates_dir,
             product, output_dirs, env_yaml, cpe_platforms)
 
@@ -367,7 +367,7 @@ def main():
     build_templated_content(
         env_yaml, args.resolved_base, args.templates_dir,
         loader.all_rules.values(), product_cpes.platforms.values())
-    collect_remediations_main(
+    process_remediations(
         env_yaml, args.remediation_type, args.resolved_base)
 
 
