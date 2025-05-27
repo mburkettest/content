@@ -5,6 +5,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
+permissions:
+    contents: read
 jobs:
   validate-fedora-ar:
     name: Build, Lint Ansible Roles on Fedora Latest (Container)

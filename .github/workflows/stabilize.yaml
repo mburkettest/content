@@ -9,6 +9,8 @@ env:
   SCAPVAL_JAR: scapval-1.3.5.jar
   SCAPVAL_FILENAME: SCAP-Content-Validation-Tool-1.3.5
   SCAPVAL_URL: https://csrc.nist.gov/CSRC/media/Projects/Security-Content-Automation-Protocol/tools/scap/1.3/
+permissions:
+    contents: read
 jobs:
   stabilize-fedora:
     name: Build and Stabilization Tests on Fedora Latest (Container)

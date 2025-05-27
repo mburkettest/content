@@ -5,6 +5,9 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
+permissions:
+    contents: read
+    actions: write
 jobs:
   build-content:
     name: Build Content

@@ -9,6 +9,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-fedora-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
+permissions:
+    contents: read
 jobs:
     build-and-test-thin-ds:
         name: Build, Test on Fedora Latest (Container)

@@ -2,6 +2,10 @@ name: Compare DS
 on:
   pull_request_target:
     branches: [ master, 'stabilization*' ]
+
+permissions:
+    pull-requests: write
+
 jobs:
   build-content:
     name: Generate Diff
@@ -36,6 +40,12 @@ jobs:
         with:
           repository: ComplianceAsCode/content-test-filtering
           path: ctf
+      - name: Checkout content (master)
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+            path: content-master
+            repository: ComplianceAsCode/content
+            ref: master
       - name: Detect content changes in the PR
         run: python3 ./ctf/content_test_filtering.py pr --base ${{ steps.fork_point.outputs.FORK_POINT }} --remote_repo ${{ github.server_url }}/${{ github.repository }}  --verbose --rule --output json ${{ github.event.pull_request.number }} > output.json
       - name: Test if there are no content changes
@@ -68,7 +78,7 @@ jobs:
         run: ./build_product ${{steps.product.outputs.prop}} --datastream-only
       - name: Compare datastreams
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: utils/compare_ds.py ssg-${{steps.product.outputs.prop}}-ds.xml build/ssg-${{steps.product.outputs.prop}}-ds.xml | tee diff.log
+        run: ./content-master/utils/compare_ds.py ssg-${{steps.product.outputs.prop}}-ds.xml build/ssg-${{steps.product.outputs.prop}}-ds.xml | tee diff.log
         env:
           PYTHONPATH: ${{ github.workspace }}
       - name: Test if there are datastream changes
@@ -140,7 +150,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Compare Ansible playbook shell commands
         if: ${{ steps.ctf.outputs.CTF_OUTPUT_SIZE != '0' }}
-        run: utils/ansible_shell_diff.py ssg-${{steps.product.outputs.prop}}-ds.xml build/ssg-${{steps.product.outputs.prop}}-ds.xml | tee diff.log
+        run: ./content-master/utils/ansible_shell_diff.py ssg-${{steps.product.outputs.prop}}-ds.xml build/ssg-${{steps.product.outputs.prop}}-ds.xml | tee diff.log
         env:
           PYTHONPATH: ${{ github.workspace }}
       - name: Test if there are Ansible shell module changes
