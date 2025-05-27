@@ -9,6 +9,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
+permissions:
+    contents: read
 jobs:
   validate-sle:
     name: Build, Test on SLE 15 (Container)

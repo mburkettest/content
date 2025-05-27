@@ -9,6 +9,8 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.run_id }}
   cancel-in-progress: true
+permissions:
+    contents: read
 jobs:
   generate-data:
     name: SRG Mapping Table
