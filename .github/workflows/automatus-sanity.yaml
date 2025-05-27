@@ -7,6 +7,9 @@ concurrency:
   cancel-in-progress: true
 env:
   DATASTREAM: ssg-fedora-ds.xml
+permissions:
+    contents: read
+    actions: write
 jobs:
   build-content:
     name: Build Content
