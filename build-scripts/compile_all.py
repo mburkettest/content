@@ -4,12 +4,14 @@ import argparse
 import os.path
 
 import ssg.build_profile
+import ssg.build_remediations as remediation
 import ssg.build_yaml
 import ssg.jinja
 import ssg.utils
 import ssg.controls
 import ssg.products
 import ssg.environment
+import ssg.templates
 from ssg.build_cpe import ProductCPEs
 from ssg.constants import BENCHMARKS
 from ssg.entities.profile import ProfileWithInlinePolicies
@@ -53,6 +55,15 @@ def create_parser():
         " If you want to process all rules in benchmark of the product, "
         "you can use 'ALL_RULES'.",
     )
+    parser.add_argument(
+        "--templates-dir", required=True,
+        help="Path to directory which contains content templates. "
+        "e.g.: ~/scap-security-guide/shared/templates"
+    )
+    parser.add_argument(
+        "--remediation-type", required=True, action="append",
+        help="language or type of the remediations we are combining."
+        "example: ansible")
     return parser
 
 
@@ -184,6 +195,95 @@ def get_profiles_per_rule_by_id(rule_id, project_root_abspath, env_yaml, product
     return get_minimal_profiles_by_id(rules)
 
 
+def build_templated_content(env_yaml, resolved_base, templates_dir, rules, platforms):
+    resolved_rules_dir = os.path.join(resolved_base, "rules")
+    remediations_dir = os.path.join(resolved_base, "fixes_from_templates")
+    checks_dir = os.path.join(resolved_base, "checks_from_templates")
+    platforms_dir = os.path.join(resolved_base, "platforms")
+    cpe_items_dir = os.path.join(resolved_base, "cpe_items")
+    builder = ssg.templates.Builder(
+        env_yaml, resolved_rules_dir, templates_dir,
+        remediations_dir, checks_dir, platforms_dir, cpe_items_dir)
+    builder.rules = rules
+    builder.platforms = platforms
+    builder.build()
+
+
+def prepare_output_dirs(output_dir, remediation_types):
+    output_dirs = dict()
+    for lang in remediation_types:
+        language_output_dir = os.path.join(output_dir, lang)
+        ssg.utils.mkdir_p(language_output_dir)
+        output_dirs[lang] = language_output_dir
+    return output_dirs
+
+
+def find_remediation(
+        fixes_from_templates_dir, rule_dir, lang, product, expected_file_name):
+    language_fixes_from_templates_dir = os.path.join(
+        fixes_from_templates_dir, lang)
+    fix_path = None
+    # first look for a static remediation
+    rule_dir_remediations = remediation.get_rule_dir_remediations(
+        rule_dir, lang, product)
+    if len(rule_dir_remediations) > 0:
+        # first item in the list has the highest priority
+        fix_path = rule_dir_remediations[0]
+    if fix_path is None:
+        # check if we have a templated remediation instead
+        if os.path.isdir(language_fixes_from_templates_dir):
+            templated_fix_path = os.path.join(
+                language_fixes_from_templates_dir, expected_file_name)
+            if os.path.exists(templated_fix_path):
+                fix_path = templated_fix_path
+    return fix_path
+
+
+def process_remediation(
+        rule, fix_path, lang, output_dirs, expected_file_name, env_yaml, cpe_platforms):
+    remediation_cls = remediation.REMEDIATION_TO_CLASS[lang]
+    remediation_obj = remediation_cls(fix_path)
+    remediation_obj.associate_rule(rule)
+    fix = remediation.process(remediation_obj, env_yaml, cpe_platforms)
+    if fix:
+        output_file_path = os.path.join(output_dirs[lang], expected_file_name)
+        remediation.write_fix_to_file(fix, output_file_path)
+
+
+def process_remediations_for_rule(
+        rule, langs, fixes_from_templates_dir, product, output_dirs,
+        env_yaml, cpe_platforms):
+    rule_dir = os.path.dirname(rule.definition_location)
+    for lang in langs:
+        ext = remediation.REMEDIATION_TO_EXT_MAP[lang]
+        expected_file_name = rule.id_ + ext
+        fix_path = find_remediation(
+            fixes_from_templates_dir, rule_dir, lang, product,
+            expected_file_name)
+        if fix_path is None:
+            # neither static nor templated remediation found
+            continue
+        try:
+            process_remediation(
+                rule, fix_path, lang, output_dirs, expected_file_name, env_yaml, cpe_platforms)
+        except Exception as exc:
+            msg = (
+                "Failed to dispatch {lang} remediation for {rule_id}: {error}"
+                .format(lang=lang, rule_id=rule.id_, error=str(exc)))
+            raise RuntimeError(msg)
+
+
+def process_remediations(env_yaml, remediation_type, resolved_base, rules, cpe_platforms):
+    output_dir = os.path.join(resolved_base, "fixes")
+    fixes_from_templates_dir = os.path.join(resolved_base, "fixes_from_templates")
+    product = ssg.utils.required_key(env_yaml, "product")
+    output_dirs = prepare_output_dirs(output_dir, remediation_type)
+    for rule in rules:
+        process_remediations_for_rule(
+            rule, remediation_type, fixes_from_templates_dir,
+            product, output_dirs, env_yaml, cpe_platforms)
+
+
 def main():
     parser = create_parser()
     args = parser.parse_args()
@@ -239,6 +339,12 @@ def main():
     profiles = list(normal_profiles.values()) + list(single_rule_profiles.values())
     save_everything(
         args.resolved_base, loader, controls_manager, profiles)
+    build_templated_content(
+        env_yaml, args.resolved_base, args.templates_dir,
+        loader.all_rules.values(), product_cpes.platforms.values())
+    process_remediations(
+        env_yaml, args.remediation_type, args.resolved_base,
+        loader.all_rules.values(), product_cpes.platforms)
 
 
 if __name__ == "__main__":
