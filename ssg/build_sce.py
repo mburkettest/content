@@ -196,7 +196,7 @@ class SCEBuilder():
         # prioritize bespoke SCE content over templated content,
         # however, while we add this to our metadata, we do not
         # bother (yet!) with generating the SCE content. This is done
-        # at a later time by build-scripts/build_templated_content.py.
+        # at a later time.
         if _check_is_loaded(self.already_loaded, rule.id_):
             return
 

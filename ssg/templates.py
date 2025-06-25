@@ -259,6 +259,8 @@ class Builder(object):
         self.cpe_items_dir = cpe_items_dir
         self.output_dirs = dict()
         self.templates = dict()
+        self.rules = None
+        self.platforms = None
         self._init_lang_output_dirs()
         self._init_and_load_templates()
         self.product_cpes = ProductCPEs()
@@ -538,11 +540,15 @@ class Builder(object):
             OSError: If there is an issue reading the platforms directory or files.
             ssg.build_yaml.PlatformError: If there is an issue constructing the Platform object.
         """
-        for platform_file in sorted(os.listdir(self.platforms_dir)):
-            platform_path = os.path.join(self.platforms_dir, platform_file)
-            platform = ssg.build_yaml.Platform.from_compiled_json(
-                platform_path, self.env_yaml, self.product_cpes)
-            self.build_platform(platform)
+        if self.platforms is None:
+            for platform_file in sorted(os.listdir(self.platforms_dir)):
+                platform_path = os.path.join(self.platforms_dir, platform_file)
+                platform = ssg.build_yaml.Platform.from_compiled_json(
+                    platform_path, self.env_yaml, self.product_cpes)
+                self.build_platform(platform)
+        else:
+            for platform in self.platforms:
+                self.build_platform(platform)
 
     def build_all_rules(self):
         """
@@ -560,16 +566,21 @@ class Builder(object):
             ssg.build_yaml.DocumentationNotComplete: If a rule's documentation is incomplete and
                                                      the build is not in debug mode.
         """
-        for rule_file in sorted(os.listdir(self.resolved_rules_dir)):
-            rule_path = os.path.join(self.resolved_rules_dir, rule_file)
-            try:
-                rule = ssg.build_yaml.Rule.from_compiled_json(
-                    rule_path, self.env_yaml, self.product_cpes)
-            except ssg.build_yaml.DocumentationNotComplete:
-                # Happens on non-debug build when a rule is "documentation-incomplete"
-                continue
-            if rule.is_templated():
-                self.build_rule(rule)
+        if self.rules is None:
+            for rule_file in sorted(os.listdir(self.resolved_rules_dir)):
+                rule_path = os.path.join(self.resolved_rules_dir, rule_file)
+                try:
+                    rule = ssg.build_yaml.Rule.from_compiled_json(
+                        rule_path, self.env_yaml, self.product_cpes)
+                except ssg.build_yaml.DocumentationNotComplete:
+                    # Happens on non-debug build when a rule is "documentation-incomplete"
+                    continue
+                if rule.is_templated():
+                    self.build_rule(rule)
+        else:
+            for rule in self.rules:
+                if rule.is_templated():
+                    self.build_rule(rule)
 
     def build(self):
         """
