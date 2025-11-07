@@ -15,6 +15,7 @@ import os.path
 import re
 import sys
 import glob
+from typing import Dict, Callable, Any, Optional
 
 
 import ssg.build_remediations
@@ -1638,7 +1639,7 @@ class Rule(XCCDFEntity, Templatable):
         ID_LABEL (str): Label for rule ID.
         PRODUCT_REFERENCES (tuple): Tuple of product-specific reference types.
     """
-    KEYS = dict(
+    KEYS: Dict[str, Callable[[], Optional[Any]]] = dict(
         description=lambda: "",
         rationale=lambda: "",
         severity=lambda: "",
