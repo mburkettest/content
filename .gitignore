@@ -72,6 +72,7 @@ ocp4/profiles/test.profile
 
 # Ignore MyPy Cache
 .mypy_cache/
+.dmypy.json
 
 # Ignore build profiling data
 .build_profiling/
