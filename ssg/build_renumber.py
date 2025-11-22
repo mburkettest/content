@@ -119,7 +119,7 @@ class FileLinker(object):
 class OVALFileLinker(FileLinker):
     CHECK_SYSTEM = oval_cs
     CHECK_NAMESPACE = oval_ns
-    build_ovals_dir = None
+    build_ovals_dir: Optional[str] = None
 
     def __init__(self, translator, xccdftree, checks, output_file_name):
         super(OVALFileLinker, self).__init__(

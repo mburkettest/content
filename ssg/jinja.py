@@ -6,7 +6,8 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import os.path
-import sys
+from typing import Optional, Dict
+
 import jinja2
 
 from urllib.parse import quote
@@ -120,7 +121,7 @@ class JinjaEnvironment(jinja2.Environment):
 
 
 # Module-level cached environment for jinja environment
-_jinja_env = None
+_jinja_env: Optional[Dict] = None
 
 
 def _get_jinja_environment(substitutions_dict):

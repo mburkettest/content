@@ -281,7 +281,7 @@ def _process_profile(profile: ProfileSelections, profile_yaml: dict, profiles_fi
     return profile
 
 
-def _load_controls_manager(controls_dir: str, product_yaml: dict) -> ssg.controls.ControlsManager:
+def _load_controls_manager(controls_dir: str, product_yaml: Dict) -> ssg.controls.ControlsManager:
     """
     Loads and initializes a ControlsManager instance.
 
@@ -290,7 +290,7 @@ def _load_controls_manager(controls_dir: str, product_yaml: dict) -> ssg.control
         product_yaml (dict): The YAML content of the product.
 
     Returns:
-        object: An instance of ControlsManager with loaded controls.
+        ssg.controls.ControlsManager: An instance of ControlsManager with loaded controls.
     """
     product_controls_dir = os.path.join(product_yaml['product_dir'], 'controls')
     control_dirs = [controls_dir]
@@ -336,10 +336,10 @@ def get_profiles_from_products(content_dir: str, products: list,
 
     for product in products:
         product_yaml = _load_product_yaml(content_dir, product)
-        product_yaml = product_yaml._data_as_dict
+        product_yaml_dict = product_yaml._data_as_dict
         product_title = product_yaml.get("full_name")
-        profiles_files = get_profile_files_from_root(product_yaml, product_yaml)
-        controls_manager = _load_controls_manager(controls_dir, product_yaml)
+        profiles_files = get_profile_files_from_root(product_yaml_dict, product_yaml_dict)
+        controls_manager = _load_controls_manager(controls_dir, product_yaml_dict)
         for file in profiles_files:
             profile_id = os.path.basename(file).split('.profile')[0]
             profile_yaml = _load_yaml_profile_file(file)

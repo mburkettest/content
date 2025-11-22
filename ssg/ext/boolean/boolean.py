@@ -558,12 +558,12 @@ class Expression(object):
     iscanonical: bool = False
 
     # these class attributes are configured when a new BooleanAlgebra is created
-    TRUE = None
-    FALSE = None
-    NOT = None
-    AND = None
-    OR = None
-    Symbol = None
+    TRUE: Optional[Any] = None
+    FALSE: Optional[Any] = None
+    NOT: Optional[Any] = None
+    AND: Optional[Any] = None
+    OR: Optional[Any] = None
+    Symbol: Optional[Any] = None
 
     @property
     def objects(self):
@@ -1125,7 +1125,7 @@ class DualBase(Function):
     "|" for OR and "&" for AND.
     """
 
-    _pyoperator = None
+    _pyoperator: Optional[Any] = None
 
     def __init__(self, arg1, arg2, *args):
         super(DualBase, self).__init__(arg1, arg2, *args)

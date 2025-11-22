@@ -371,7 +371,7 @@ class Policy(ssg.entities.common.XCCDFEntity):
         product (list): A list of products associated with the policy.
     """
     def __init__(self, filepath, env_yaml=None):
-        self.controls_dirs = []
+        self.policy = None
         self.id = None
         self.env_yaml = env_yaml
         self.filepath = filepath
@@ -640,7 +640,6 @@ class Policy(ssg.entities.common.XCCDFEntity):
         controls_dir = yaml_contents.get("controls_dir")
         if controls_dir:
             self.controls_dir = os.path.join(os.path.dirname(self.filepath), controls_dir)
-            self.controls_dirs = [self.controls_dir]
         self.id = ssg.utils.required_key(yaml_contents, "id")
         self.policy = ssg.utils.required_key(yaml_contents, "policy")
         self.title = ssg.utils.required_key(yaml_contents, "title")

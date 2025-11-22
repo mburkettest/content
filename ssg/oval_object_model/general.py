@@ -1,4 +1,5 @@
 import re
+from typing import Optional, Dict
 
 from ..constants import BOOL_TO_STR, xsi_namespace, OVAL_NAMESPACES, OVALREFATTR_TO_TAG
 from ..xml import ElementTree
@@ -88,7 +89,7 @@ class OVALBaseObject(object):
 
 class OVALComponent(OVALBaseObject):
     deprecated = False
-    notes = None
+    notes: Optional[str] = None
     version = "0"
 
     def __init__(self, tag, id_):
@@ -209,8 +210,8 @@ def load_oval_entity_property(end_point_property_el):
 
 
 class OVALEntityProperty(OVALBaseObject):
-    attributes = None
-    text = None
+    attributes: Optional[Dict] = None
+    text: Optional[str] = None
 
     def __init__(self, tag):
         super(OVALEntityProperty, self).__init__(tag)

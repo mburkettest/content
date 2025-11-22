@@ -9,6 +9,7 @@ import os
 import yaml
 from collections import namedtuple
 from glob import glob
+from typing import Dict
 
 from .constants import (DEFAULT_PRODUCT, product_directories,
                         DEFAULT_DCONF_GDM_DIR,
@@ -455,7 +456,7 @@ def get_profiles_directory(env_yaml):
     return os.path.normpath(profiles_root)
 
 
-def get_profile_files_from_root(env_yaml, product_yaml):
+def get_profile_files_from_root(env_yaml: Dict, product_yaml: Dict):
     """
     Retrieves a list of profile files from the specified root directory.
 
