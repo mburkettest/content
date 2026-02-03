@@ -281,7 +281,7 @@ class PlaybookToRoleConverter():
                 break
             else:
                 desc += (line + "\n")
-        return desc.strip("\n\n")
+        return desc.strip("\n")
 
     @property
     def _update_galaxy_tags(self):
