@@ -710,7 +710,7 @@ class Checker(object):
         except Exception as exc:
             msg = ("Failed to start test environment '{0}': {1}"
                    .format(self.test_env.name, str(exc)))
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from exc
 
     def finalize(self):
         if not self.executed_tests:
@@ -721,7 +721,7 @@ class Checker(object):
         except Exception as exc:
             msg = ("Failed to finalize test environment '{0}': {1}"
                    .format(self.test_env.name, str(exc)))
-            raise RuntimeError(msg)
+            raise RuntimeError(msg) from exc
 
 
 REMEDIATION_PROFILE_RUNNERS = {

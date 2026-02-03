@@ -202,7 +202,7 @@ def reboot_domain(domain, domain_ip, ssh_port):
                 str_err = ("Timeout reached: '{0}' ({1}:{2}) domain does not "
                            "accept connections.".format(domain.name(), domain_ip, ssh_port))
                 logging.debug(str_err)
-                raise TimeoutException(str_err)
+                raise TimeoutException(str_err) from None
         else:
             ssh_socket.close()
             break
