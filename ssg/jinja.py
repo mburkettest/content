@@ -5,7 +5,8 @@ Common functions for processing Jinja2 in SSG
 from __future__ import absolute_import
 
 import os.path
-import sys
+from typing import Optional, Dict
+
 import jinja2
 from jinja2.sandbox import SandboxedEnvironment
 
@@ -120,7 +121,7 @@ class JinjaEnvironment(SandboxedEnvironment):
 
 
 # Module-level cached environment for jinja environment
-_jinja_env = None
+_jinja_env: Optional[Dict] = None
 
 
 def _get_jinja_environment(substitutions_dict):

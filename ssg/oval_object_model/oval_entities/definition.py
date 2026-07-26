@@ -1,7 +1,9 @@
 import logging
+from typing import Optional, List
 
 from ... import utils
 from ...constants import BOOL_TO_STR, MULTI_PLATFORM_LIST, OVAL_NAMESPACES, STR_TO_BOOL
+from ...entities.common import XCCDFEntity
 from ...xml import ElementTree
 from ..general import (
     OVALBaseObject,
@@ -218,8 +220,8 @@ def load_affected(all_affected_elements):
 class Affected(OVALBaseObject):
     platform_tag = "platform"
     product_tag = "product"
-    platforms = None
-    products = None
+    platforms: Optional[List[str]] = None
+    products: Optional[List[str]] = None
 
     def __init__(self, tag, family):
         super(Affected, self).__init__(tag)
@@ -331,8 +333,8 @@ def load_metadata(oval_metadata_xml_el, definition_id):
 
 
 class Metadata(OVALBaseObject):
-    array_of_affected = None
-    array_of_references = None
+    array_of_affected: Optional[List] = None
+    array_of_references: Optional[List] = None
     title = ""
     description = ""
     title_tag = "title"
@@ -425,7 +427,7 @@ def load_definition(oval_definition_xml_el):
 
 
 class Definition(OVALComponent):
-    criteria = None
+    criteria: Optional[OVALComponent] = None
 
     def __init__(self, tag, id_, class_, metadata):
         super(Definition, self).__init__(tag, id_)

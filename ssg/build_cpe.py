@@ -5,6 +5,7 @@ Common functions for building CPEs
 from __future__ import absolute_import
 import os
 import sys
+from typing import Dict, Callable, Any, Optional
 
 import ssg.id_translate
 from .constants import oval_namespace
@@ -193,7 +194,7 @@ class CPEItem(XCCDFEntity, Templatable):
     Represents the cpe-item element from the CPE standard.
     """
 
-    KEYS = dict(
+    KEYS: Dict[str, Callable[[], Optional[Any]]] = dict(
         name=lambda: "",
         check_id=lambda: "",
         bash_conditional=lambda: "",

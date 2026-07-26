@@ -7,6 +7,7 @@ from __future__ import absolute_import
 import collections
 import copy
 import re
+from typing import Any, Dict, List
 
 from .constants import ansible_version_requirement_pre_task_name
 from .constants import min_ansible_version
@@ -57,10 +58,10 @@ def add_minimum_version(ansible_src):
     return ansible_src.replace(" - hosts: all", pre_task, 1)
 
 
-def remove_too_many_blank_lines(ansible_src):
+def remove_too_many_blank_lines(ansible_src: str) -> str:
     """
     Condenses three or more consecutive empty lines into two empty lines.
-
+task
     Args:
         ansible_src (str): The source string from an Ansible file.
 
@@ -70,7 +71,7 @@ def remove_too_many_blank_lines(ansible_src):
     return re.sub(r'\n{4,}', '\n\n\n', ansible_src, count=0, flags=re.MULTILINE)
 
 
-def remove_trailing_whitespace(ansible_src):
+def remove_trailing_whitespace(ansible_src: str) -> str:
     """
     Remove trailing whitespace from each line in the given Ansible source string.
 
@@ -96,7 +97,7 @@ service_facts_task = collections.OrderedDict([
 ])
 
 
-def task_is(task, names):
+def task_is(task: Dict[str, Any], names: List[str]) -> bool:
     """
     Check if the task is one of the given names.
 
@@ -136,7 +137,7 @@ class AnsibleSnippetsProcessor:
         self.service_tasks = []
         self.other_tasks = []
 
-    def _process_task(self, task):
+    def _process_task(self, task: Dict[str, Any]):
         """
         Process a single task, determining how to handle it.
 
@@ -173,7 +174,7 @@ class AnsibleSnippetsProcessor:
             return None
         return task
 
-    def _process_snippet(self, snippet):
+    def _process_snippet(self, snippet: str) -> None:
         """
         Process a single snippet, extracting tasks from it.
 
@@ -185,7 +186,7 @@ class AnsibleSnippetsProcessor:
             if self._process_task(task) is not None:
                 self.other_tasks.append(task)
 
-    def process_snippets(self):
+    def process_snippets(self) -> None:
         """
         Process all snippets provided during initialization.
         """
